@@ -1,0 +1,64 @@
+# spring.application.name=patient-api
+### application.yml
+# ```yaml
+server:
+  port: 8080
+
+spring:
+  application:
+    name: patient-api
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5433/patient_db
+    username: patient_user
+    password: patient_pass
+  
+  # jpa:
+  #   hibernate:
+  #   ddl-auto: update
+  #   show-sql: false
+  #   properties:
+  #     hibernate:
+  #       dialect: org.hibernate.dialect.PostgreSQLDialect
+  #       format_sql: true
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  
+  # flyway:
+  #   locations: classpath:db/migration
+  #   baseline-on-migrate: true
+  flyway:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.mediconnect.patient: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# FHIR Configuration
+hapi:
+  fhir:
+    version: r4
+    server:
+      path: /fhir/*
