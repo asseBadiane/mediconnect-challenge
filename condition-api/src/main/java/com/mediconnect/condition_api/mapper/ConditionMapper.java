@@ -38,7 +38,68 @@ public interface ConditionMapper {
     @Mapping(target = "verificationStatus", source = "verificationStatus", qualifiedByName = "mapVerificationStatus")
     @Mapping(target = "severity", source = ".", qualifiedByName = "mapSeverity")
     @Mapping(target = "note", source = "note", qualifiedByName = "mapNote")
-    Condition toFhirCondition(ConditionEntity entity);
+    // Condition toFhirCondition(ConditionEntity entity);
+    default Condition toFhirCondition(ConditionEntity entity) {
+        Condition condition = new Condition();
+        
+        // ID FHIR
+        condition.setId(entity.getFhirId());
+        
+        // Patient reference
+        condition.setSubject(new Reference(entity.getPatientReference()));
+        
+        // Code
+        CodeableConcept code = new CodeableConcept();
+        Coding coding = code.addCoding();
+        coding.setSystem(entity.getCodeSystem())
+              .setCode(entity.getCodeValue())
+              .setDisplay(entity.getCodeDisplay());
+        condition.setCode(code);
+        
+        // Onset date
+        if (entity.getOnsetDateTime() != null) {
+            condition.setOnset(new DateTimeType(Date.from(entity.getOnsetDateTime()
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant())));
+        }
+        
+        // Clinical status
+        if (entity.getClinicalStatus() != null) {
+            condition.setClinicalStatus(new CodeableConcept()
+                .addCoding(new Coding()
+                    .setSystem("http://terminology.hl7.org/CodeSystem/condition-clinical")
+                    .setCode(entity.getClinicalStatus())));
+        }
+        
+        // Verification status
+        if (entity.getVerificationStatus() != null) {
+            condition.setVerificationStatus(new CodeableConcept()
+                .addCoding(new Coding()
+                    .setSystem("http://terminology.hl7.org/CodeSystem/condition-ver-status")
+                    .setCode(entity.getVerificationStatus())));
+        }
+        
+        // Severity
+        if (entity.getSeverityCode() != null) {
+            condition.setSeverity(new CodeableConcept()
+                .addCoding(new Coding()
+                    .setSystem(entity.getSeveritySystem())
+                    .setCode(entity.getSeverityCode())
+                    .setDisplay(entity.getSeverityDisplay())));
+        }
+        
+        // Notes
+        if (entity.getNote() != null) {
+            condition.addNote(new Annotation().setText(entity.getNote()));
+        }
+        
+        // Metadata
+        condition.getMeta()
+            .setVersionId("1")
+            .setLastUpdated(new Date());
+        
+        return condition;
+    }
 
     @Mapping(target = "fhirId", source = "id", qualifiedByName = "extractRawId")
     @Mapping(target = "patientReference", source = "subject.reference")
@@ -52,7 +113,47 @@ public interface ConditionMapper {
     @Mapping(target = "severityCode", source = "severity.coding", qualifiedByName = "extractSeverityCode")
     @Mapping(target = "severityDisplay", source = "severity.coding", qualifiedByName = "extractSeverityDisplay")
     @Mapping(target = "note", source = "note", qualifiedByName = "extractNote")
-    ConditionEntity fromFhirCondition(Condition condition);
+    
+    // ConditionEntity fromFhirCondition(Condition condition);
+    default ConditionEntity fromFhirCondition(Condition condition) {
+    ConditionEntity entity = new ConditionEntity();
+    
+    if (condition.getId() != null) {
+        entity.setFhirId(condition.getId()); // Keep the original ID, including "Condition/" if present
+    }
+    
+    // Mapping des autres champs...
+    if (condition.getSubject() != null && condition.getSubject().getReference() != null) {
+        entity.setPatientReference(condition.getSubject().getReference());
+    }
+    if (condition.getCode() != null && !condition.getCode().getCoding().isEmpty()) {
+        org.hl7.fhir.r4.model.Coding coding = condition.getCode().getCodingFirstRep();
+        entity.setCodeSystem(coding.getSystem());
+        entity.setCodeValue(coding.getCode());
+        entity.setCodeDisplay(coding.getDisplay());
+    }
+    if (condition.getOnsetDateTimeType() != null) {
+        entity.setOnsetDateTime(condition.getOnsetDateTimeType().getValue().toInstant()
+            .atZone(ZoneId.systemDefault()).toLocalDateTime());
+    }
+    if (condition.getClinicalStatus() != null) {
+        entity.setClinicalStatus(condition.getClinicalStatus().getCodingFirstRep().getCode());
+    }
+    if (condition.getVerificationStatus() != null) {
+        entity.setVerificationStatus(condition.getVerificationStatus().getCodingFirstRep().getCode());
+    }
+    if (condition.getSeverity() != null && !condition.getSeverity().getCoding().isEmpty()) {
+        org.hl7.fhir.r4.model.Coding severityCoding = condition.getSeverity().getCodingFirstRep();
+        entity.setSeveritySystem(severityCoding.getSystem());
+        entity.setSeverityCode(severityCoding.getCode());
+        entity.setSeverityDisplay(severityCoding.getDisplay());
+    }
+    if (condition.getNote() != null && !condition.getNote().isEmpty()) {
+        entity.setNote(condition.getNoteFirstRep().getText());
+    }
+    
+    return entity;
+}
 
     // Fixed: Return CodeableConcept directly instead of using @MappingTarget
     @Named("mapCoding")
