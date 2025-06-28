@@ -103,30 +103,27 @@ public class ConditionController {
         List<Condition> conditions = conditionService.getConditionsByPatientId(patientId);
         return ResponseEntity.ok(conditions);
     }
-    
+
     @PutMapping("/Condition/{id}")
-    @Operation(summary = "Update condition", description = "Updates an existing FHIR Condition resource")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Condition updated successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Condition.class))),
-        @ApiResponse(responseCode = "400", description = "Bad request - Invalid condition data or patient not found"),
-        @ApiResponse(responseCode = "404", description = "Condition not found"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     public ResponseEntity<Condition> updateCondition(
-            @Parameter(description = "Condition ID", required = true)
             @PathVariable String id,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                description = "Updated FHIR Condition resource",
-                required = true,
-                content = @Content(schema = @Schema(implementation = Condition.class))
-            )
-            @RequestBody Condition condition) {
-        
-        log.info("Updating condition with ID: {}", id);
-        
+            HttpServletRequest request) throws IOException {
+
+        String conditionJson = new String(request.getInputStream().readAllBytes());
+        IParser parser = fhirContext.newJsonParser();
+        Condition condition = parser.parseResource(Condition.class, conditionJson);
+
+        // Valider le format de la date
+        if (condition.getOnsetDateTimeType() != null) {
+            try {
+                condition.getOnsetDateTimeType().getValue();
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Invalid date format for onsetDateTime", e);
+            }
+        }
+
         Condition updatedCondition = conditionService.updateCondition(id, condition);
-        return ResponseEntity.ok(updatedCondition);
+        return new ResponseEntity<>(updatedCondition, HttpStatus.OK);
     }
     
     @GetMapping("/Condition/all")
