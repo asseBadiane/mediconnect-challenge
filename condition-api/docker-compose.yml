@@ -1,0 +1,14 @@
+services:
+  condition-db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: condition_user
+      POSTGRES_PASSWORD: condition_pass
+      POSTGRES_DB: condition_db
+    ports:
+      - "5434:5432"  # Different port from patient-api
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
