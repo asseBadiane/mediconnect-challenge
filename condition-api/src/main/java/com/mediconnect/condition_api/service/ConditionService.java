@@ -31,34 +31,41 @@ public class ConditionService {
     
 
     public Condition createCondition(Condition condition) {
-    log.info("Creating new condition for patient: {}", condition.getSubject().getReference());
-    
-    String patientReference = condition.getSubject().getReference();
-    String patientId = extractPatientId(patientReference);
-    
-    Boolean patientExists = patientClient.patientExists(patientId).block();
-    if (Boolean.FALSE.equals(patientExists)) {
-        throw new PatientNotFoundException("Patient not found with ID: " + patientId);
-    }
-    
-    if (condition.getId() == null || condition.getId().isEmpty()) {
-        condition.setId(UUID.randomUUID().toString()); // Sets raw ID
-    }
-    
-    ConditionEntity entity = conditionMapper.fromFhirCondition(condition);
-    ConditionEntity savedEntity = conditionRepository.save(entity);
-    
-    log.info("Successfully created condition with ID: {}", savedEntity.getFhirId());
-    return conditionMapper.toFhirCondition(savedEntity); // Returns with "Condition/" prefix
+        log.info("Creating new condition for patient: {}", condition.getSubject().getReference());
+        
+        String patientReference = condition.getSubject().getReference();
+        String patientId = extractPatientId(patientReference);
+        
+        Boolean patientExists = patientClient.patientExists(patientId).block();
+        if (Boolean.FALSE.equals(patientExists)) {
+            throw new PatientNotFoundException("Patient not found with ID: " + patientId);
+        }
+        
+        if (condition.getId() == null || condition.getId().isEmpty()) {
+            condition.setId(UUID.randomUUID().toString()); // Sets raw ID
+        }
+        
+        ConditionEntity entity = conditionMapper.fromFhirCondition(condition);
+        ConditionEntity savedEntity = conditionRepository.save(entity);
+        
+        log.info("Successfully created condition with ID: {}", savedEntity.getFhirId());
+        return conditionMapper.toFhirCondition(savedEntity); // Returns with "Condition/" prefix
     }
     
     @Transactional(readOnly = true)
     public Condition getConditionById(String id) {
         log.debug("Fetching condition with ID: {}", id);
         
-        ConditionEntity entity = conditionRepository.findByFhirId(id)
-                .orElseThrow(() -> new ConditionNotFoundException("Condition not found with ID: " + id));
+        // Try to find by both raw ID and full FHIR ID
+        String fhirId = id.startsWith("Condition/") ? id : "Condition/" + id;
+        String rawId = id.startsWith("Condition/") ? id.substring("Condition/".length()) : id;
         
+        log.debug("Searching for condition with fhirId: {} or rawId: {}", fhirId, rawId);
+        
+        ConditionEntity entity = conditionRepository.findByFhirId(fhirId)
+            .or(() -> conditionRepository.findByFhirId(rawId))
+            .orElseThrow(() -> new ConditionNotFoundException("Condition not found with ID: " + id));
+            
         return conditionMapper.toFhirCondition(entity);
     }
     
@@ -82,11 +89,16 @@ public class ConditionService {
     public Condition updateCondition(String id, Condition condition) {
         log.info("Updating condition with ID: {}", id);
         
-        ConditionEntity existingEntity = conditionRepository.findByFhirId(id)
+        // Use the same logic as getConditionById to find the entity
+        String fhirId = id.startsWith("Condition/") ? id : "Condition/" + id;
+        String rawId = id.startsWith("Condition/") ? id.substring("Condition/".length()) : id;
+        
+        ConditionEntity existingEntity = conditionRepository.findByFhirId(fhirId)
+                .or(() -> conditionRepository.findByFhirId(rawId))
                 .orElseThrow(() -> new ConditionNotFoundException("Condition not found with ID: " + id));
         
-        // Set the ID to maintain consistency
-        condition.setId(id);
+        // Set the ID to maintain consistency - use the full FHIR ID format
+        condition.setId(fhirId.startsWith("Condition/") ? fhirId.substring("Condition/".length()) : fhirId);
         
         // Validate patient exists if patient reference is being updated
         if (condition.getSubject() != null && condition.getSubject().getReference() != null) {
