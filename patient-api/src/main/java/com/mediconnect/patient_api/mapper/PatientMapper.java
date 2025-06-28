@@ -33,6 +33,10 @@ public interface PatientMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     void updateEntityFromDto(PatientRequestDto dto, @MappingTarget PatientEntity entity);
+
+     default String generateFhirId() {
+        return UUID.randomUUID().toString();
+    }
     
    
 }
