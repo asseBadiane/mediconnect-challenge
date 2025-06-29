@@ -1,17 +1,26 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent } from './features/dashboard/components/dashboard/dashboard.component';
-import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
+import { DashboardComponent } from './features/dashboard/dashboard/dashboard.component';
+import { PatientListComponent } from './features/patients/components/patient-list/patient-list.component';
+import { PatientFormComponent } from './features/patients/components/patient-form/patient-form.component';
+import { PatientProfilePageComponent } from './features/patients/pages/patient-profile-page/patient-profile-page.component';
+
 
 export const routes: Routes = [
-  
-  
   {
     path: 'dashboard',
     component: DashboardComponent,
   },
   {
     path: 'patients',
-    loadChildren: () => import('./features/patients/patients.module').then(m => m.PatientsModule)
+    component: PatientListComponent
+  },
+  {
+    path: 'patients/new',
+    component: PatientFormComponent
+  },
+  {
+    path: 'patients/:id',
+    component: PatientProfilePageComponent
   },
   {
     path: 'conditions',
