@@ -1,0 +1,110 @@
+.sidebar-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #fafafa;
+}
+
+.dark-theme .sidebar-content {
+  background-color: #424242;
+}
+
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  
+  h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #333;
+  }
+}
+
+.dark-theme .sidebar-header {
+  border-bottom-color: #616161;
+  
+  h2 {
+    color: #fff;
+  }
+}
+
+.nav-list {
+  flex: 1;
+  padding: 8px 0;
+}
+
+.nav-item, .nav-sub-item {
+  margin: 4px 8px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  
+  &.active-link {
+    background-color: rgba(33, 150, 243, 0.1);
+    color: #2196F3;
+    
+    mat-icon {
+      color: #2196F3;
+    }
+  }
+}
+
+.dark-theme .nav-item:hover,
+.dark-theme .nav-sub-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.nav-expansion-panel {
+  margin: 4px 8px;
+  border-radius: 8px;
+  box-shadow: none;
+  
+  &::ng-deep .mat-expansion-panel-header {
+    padding: 0 16px;
+    height: 48px;
+  }
+  
+  &::ng-deep .mat-expansion-panel-body {
+    padding: 0;
+  }
+}
+
+.panel-icon {
+  margin-right: 12px;
+}
+
+.nav-sub-item {
+  padding-left: 32px;
+}
+
+.badge {
+  background-color: #f44336;
+  color: white;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.sidebar-footer {
+  padding: 16px;
+  
+  .app-info {
+    text-align: center;
+    
+    .version, .copyright {
+      margin: 4px 0;
+      font-size: 0.75rem;
+      color: #666;
+    }
+  }
+}
+
+.dark-theme .sidebar-footer .app-info .version,
+.dark-theme .sidebar-footer .app-info .copyright {
+  color: #bbb;
+}
