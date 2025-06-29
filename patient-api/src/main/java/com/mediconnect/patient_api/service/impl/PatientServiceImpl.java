@@ -71,39 +71,6 @@ public class PatientServiceImpl implements PatientService {
         return patientMapper.toResponseDto(entity);
     }
     
-
-    @Transactional(readOnly = true)
-    public Page<PatientResponseDto> searchPatients(PatientSearchDto searchDto) {
-        log.debug("Searching patients with criteria: {}", searchDto);
-
-        Pageable pageable = createPageable(searchDto);
-
-        Page<PatientEntity> entities = patientRepository.findBySearchCriteria(
-                searchDto.getName(),
-                searchDto.getGivenName(),
-                searchDto.getFamilyName(),
-                searchDto.getEmail(),
-                searchDto.getPhone(),
-                searchDto.getActive(),
-                pageable);
-
-        return entities.map(patientMapper::toResponseDto);
-    }
-
-    private Pageable createPageable(PatientSearchDto searchDto) {
-        String sortParam = searchDto.getSort(); // e.g., "familyName,asc"
-        Sort sort = Sort.unsorted();
-        if (sortParam != null && !sortParam.isEmpty()) {
-            String[] parts = sortParam.split(",");
-            if (parts.length == 2) {
-                String field = parts[0]; // e.g., "familyName"
-                String direction = parts[1]; // e.g., "asc"
-                Sort.Direction dir = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-                sort = Sort.by(dir, field);
-            }
-        }
-        return PageRequest.of(searchDto.getPage(), searchDto.getSize(), sort);
-    }
     
     @Override
     public PatientResponseDto updatePatient(String fhirId, PatientRequestDto requestDto) {
@@ -140,8 +107,35 @@ public class PatientServiceImpl implements PatientService {
         log.info("Soft deleted patient with FHIR ID: {}", fhirId);
     }
     
+    
+    
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByIdentifier(String identifier) {
+        return patientRepository.existsByIdentifierValue(identifier);
+    }
+    
+    private Pageable createPageable(PatientSearchDto searchDto) {
+        Sort sort = Sort.by("familyName").ascending();
+        
+        if (searchDto.getSort() != null && !searchDto.getSort().isEmpty()) {
+            String[] sortParts = searchDto.getSort().split(",");
+            if (sortParts.length == 2) {
+                Sort.Direction direction = sortParts[1].equalsIgnoreCase("desc") ? 
+                    Sort.Direction.DESC : Sort.Direction.ASC;
+                sort = Sort.by(direction, sortParts[0]);
+            }
+        }
+        
+        return PageRequest.of(
+            Math.max(0, searchDto.getPage()),
+            Math.min(100, Math.max(1, searchDto.getSize())),
+            sort);
+    }
+
     @Override
     public Page<PatientResponseDto> getAllPatients() {
         return patientRepository.findAll(createPageable(new PatientSearchDto())).map(patientMapper::toResponseDto);
     }
+
 }

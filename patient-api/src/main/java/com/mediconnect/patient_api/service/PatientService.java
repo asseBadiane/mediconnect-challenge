@@ -21,9 +21,7 @@ public interface PatientService {
     
     void deletePatient(String fhirId);
 
-    Page<PatientResponseDto> searchPatients(PatientSearchDto searchDto);
-
-    long getActivePatientCount();
+    boolean existsByIdentifier(String identifier);
     
 
 }

@@ -77,62 +77,6 @@ public class PatientController {
     
 
 
-    @Operation(summary = "Search patients", description = "Search patients with various criteria")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Search completed successfully")
-    })
-    @GetMapping("/Patient")
-    public ResponseEntity<Page<PatientResponseDto>> searchPatients(
-            @Parameter(description = "Patient full name") 
-            @RequestParam(required = false) String name,
-            
-            @Parameter(description = "Patient given name") 
-            @RequestParam(required = false) String given,
-            
-            @Parameter(description = "Patient family name") 
-            @RequestParam(required = false) String family,
-            
-            @Parameter(description = "Patient identifier") 
-            @RequestParam(required = false) String identifier,
-            
-            @Parameter(description = "Patient email") 
-            @RequestParam(required = false) String email,
-            
-            @Parameter(description = "Patient phone") 
-            @RequestParam(required = false) String phone,
-            
-            @Parameter(description = "Patient active status") 
-            @RequestParam(required = false) Boolean active,
-            
-            @Parameter(description = "Page number (0-based)") 
-            @RequestParam(defaultValue = "0") int page,
-            
-            @Parameter(description = "Page size") 
-            @RequestParam(defaultValue = "20") int size,
-            
-            @Parameter(description = "Sort criteria (field,direction)") 
-            @RequestParam(required = false) String sort) {
-        
-        log.info("Searching patients with criteria - name: {}, given: {}, family: {}, identifier: {}", 
-                name, given, family, identifier);
-
-        PatientSearchDto searchDto = PatientSearchDto.builder()
-                .name(name)
-                .givenName(given)
-                .familyName(family)
-                .identifier(identifier)
-                .email(email)
-                .phone(phone)
-                .active(active)
-                .page(page)
-                .size(size)
-                .sort(sort)
-                .build();
-
-        Page<PatientResponseDto> response = patientService.searchPatients(searchDto);
-        return ResponseEntity.ok(response);
-    }
-
     @Operation(summary = "Update patient", description = "Updates an existing patient")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Patient updated successfully"),
@@ -164,6 +108,18 @@ public class PatientController {
         patientService.deletePatient(fhirId);
         return ResponseEntity.noContent().build();
     }
+
+
+
+    @Operation(summary = "Check if patient exists by identifier")
+    @GetMapping("/Patient/identifier/{identifier}/exists")
+    public ResponseEntity<Boolean> existsByIdentifier(
+            @Parameter(description = "Identifier of the patient")
+            @PathVariable @NotBlank String identifier) {
+        boolean exists = patientService.existsByIdentifier(identifier);
+        return ResponseEntity.ok(exists);
+    }
+
 
     @Operation(summary = "Health check endpoint")
     @GetMapping("/health")

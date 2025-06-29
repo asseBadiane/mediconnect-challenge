@@ -4,7 +4,7 @@ package com.mediconnect.patient_api.mapper;
 import com.mediconnect.patient_api.dto.PatientRequestDto;
 import com.mediconnect.patient_api.dto.PatientResponseDto;
 import com.mediconnect.patient_api.model.PatientEntity;
-import org.hl7.fhir.r4.model.Patient;
+
 
 import org.mapstruct.*;
 
@@ -37,6 +37,4 @@ public interface PatientMapper {
      default String generateFhirId() {
         return UUID.randomUUID().toString();
     }
-    
-   
 }
