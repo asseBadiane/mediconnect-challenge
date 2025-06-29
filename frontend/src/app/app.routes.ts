@@ -1,9 +1,13 @@
 import { Routes } from '@angular/router';
+import { DashboardComponent } from './features/dashboard/components/dashboard/dashboard.component';
+import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 
 export const routes: Routes = [
+  
+  
   {
-    path: '',
-    loadChildren: () => import('./features/dashboard/dashboard.module').then(m => m.DashboardModule)
+    path: 'dashboard',
+    component: DashboardComponent,
   },
   {
     path: 'patients',
