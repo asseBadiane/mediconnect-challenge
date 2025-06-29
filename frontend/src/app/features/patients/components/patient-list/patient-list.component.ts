@@ -76,11 +76,11 @@ export class PatientListComponent implements OnInit {
   }
 
   viewPatient(patient: PatientResponse): void {
-    this.router.navigate(['/patient', patient.fhirId]);
+    this.router.navigate(['/patients', patient.fhirId]);
   }
 
   editPatient(patient: PatientResponse): void {
-    this.router.navigate(['/patient', patient.fhirId, 'edit']);
+    this.router.navigate(['/patients', patient.fhirId, 'edit']);
   }
 
   deletePatient(patient: PatientResponse): void {

@@ -3,6 +3,7 @@ import { DashboardComponent } from './features/dashboard/dashboard/dashboard.com
 import { PatientListComponent } from './features/patients/components/patient-list/patient-list.component';
 import { PatientFormComponent } from './features/patients/components/patient-form/patient-form.component';
 import { PatientProfilePageComponent } from './features/patients/pages/patient-profile-page/patient-profile-page.component';
+import { UpdatePatientComponent } from './features/patients/components/update-patient/update-patient.component';
 
 
 export const routes: Routes = [
@@ -19,8 +20,12 @@ export const routes: Routes = [
     component: PatientFormComponent
   },
   {
-    path: 'patient/:fhirId',
+    path: 'patients/:fhirId',
     component: PatientProfilePageComponent
+  },
+  {
+    path: 'patients/:fhirId/edit',
+    component: UpdatePatientComponent
   },
   {
     path: 'conditions',

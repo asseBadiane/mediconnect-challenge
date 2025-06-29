@@ -1,0 +1,260 @@
+<div class="patient-form-container">
+  <div class="form-header">
+    <h2 class="form-title">
+      <i class="fas fa-user-edit"></i>
+      Edit Patient
+    </h2>
+    <p class="form-subtitle">
+      Update the patient's information
+    </p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading patient data...</p>
+  </div>
+
+  <form [formGroup]="patientForm" (ngSubmit)="onSubmit()" class="patient-form" *ngIf="!isLoading">
+    <!-- Personal Information Section -->
+    <div class="form-section">
+      <h3 class="section-title">
+        <i class="fas fa-user"></i>
+        Personal Information
+      </h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="givenName" class="form-label required">First Name</label>
+          <input
+            type="text"
+            id="givenName"
+            formControlName="givenName"
+            class="form-control"
+            [class.error]="patientForm.get('givenName')?.invalid && patientForm.get('givenName')?.touched"
+            placeholder="Enter first name"
+          />
+          <div class="error-message" *ngIf="getFieldError('givenName')">
+            {{ getFieldError('givenName') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="familyName" class="form-label required">Last Name</label>
+          <input
+            type="text"
+            id="familyName"
+            formControlName="familyName"
+            class="form-control"
+            [class.error]="patientForm.get('familyName')?.invalid && patientForm.get('familyName')?.touched"
+            placeholder="Enter last name"
+          />
+          <div class="error-message" *ngIf="getFieldError('familyName')">
+            {{ getFieldError('familyName') }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="identifier" class="form-label required">Patient Identifier</label>
+          <input
+            type="text"
+            id="identifier"
+            formControlName="identifier"
+            class="form-control"
+            [class.error]="patientForm.get('identifier')?.invalid && patientForm.get('identifier')?.touched"
+            placeholder="Enter unique identifier"
+            (blur)="checkIdentifierAvailability()"
+            [readonly]="true"
+          />
+          <div class="error-message" *ngIf="getFieldError('identifier')">
+            {{ getFieldError('identifier') }}
+          </div>
+          <div class="error-message" *ngIf="patientForm.get('identifier')?.errors?.['identifierTaken']">
+            This identifier is already taken
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="gender" class="form-label required">Gender</label>
+          <select
+            id="gender"
+            formControlName="gender"
+            class="form-control"
+            [class.error]="patientForm.get('gender')?.invalid && patientForm.get('gender')?.touched"
+          >
+            <option value="">Select gender</option>
+            <option *ngFor="let option of genderOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <div class="error-message" *ngIf="getFieldError('gender')">
+            {{ getFieldError('gender') }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="birthDate" class="form-label required">Birth Date</label>
+          <input
+            type="date"
+            id="birthDate"
+            formControlName="birthDate"
+            class="form-control"
+            [class.error]="patientForm.get('birthDate')?.invalid && patientForm.get('birthDate')?.touched"
+          />
+          <div class="error-message" *ngIf="getFieldError('birthDate')">
+            {{ getFieldError('birthDate') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Information Section -->
+    <div class="form-section">
+      <h3 class="section-title">
+        <i class="fas fa-phone"></i>
+        Contact Information
+      </h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="phone" class="form-label">Phone Number</label>
+          <input
+            type="tel"
+            id="phone"
+            formControlName="phone"
+            class="form-control"
+            [class.error]="patientForm.get('phone')?.invalid && patientForm.get('phone')?.touched"
+            placeholder="Enter phone number"
+          />
+          <div class="error-message" *ngIf="getFieldError('phone')">
+            {{ getFieldError('phone') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email" class="form-label">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            class="form-control"
+            [class.error]="patientForm.get('email')?.invalid && patientForm.get('email')?.touched"
+            placeholder="Enter email address"
+          />
+          <div class="error-message" *ngIf="getFieldError('email')">
+            {{ getFieldError('email') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Address Information Section -->
+    <div class="form-section" formGroupName="address">
+      <h3 class="section-title">
+        <i class="fas fa-map-marker-alt"></i>
+        Address Information
+      </h3>
+      
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label for="line" class="form-label">Street Address</label>
+          <input
+            type="text"
+            id="line"
+            formControlName="line"
+            class="form-control"
+            placeholder="Enter street address"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="city" class="form-label">City</label>
+          <input
+            type="text"
+            id="city"
+            formControlName="city"
+            class="form-control"
+            placeholder="Enter city"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="state" class="form-label">State/Province</label>
+          <input
+            type="text"
+            id="state"
+            formControlName="state"
+            class="form-control"
+            placeholder="Enter state or province"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="postalCode" class="form-label">Postal Code</label>
+          <input
+            type="text"
+            id="postalCode"
+            formControlName="postalCode"
+            class="form-control"
+            [class.error]="patientForm.get('address.postalCode')?.invalid && patientForm.get('address.postalCode')?.touched"
+            placeholder="Enter postal code"
+          />
+          <div class="error-message" *ngIf="getAddressFieldError('postalCode')">
+            {{ getAddressFieldError('postalCode') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="country" class="form-label">Country</label>
+          <input
+            type="text"
+            id="country"
+            formControlName="country"
+            class="form-control"
+            placeholder="Enter country"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="onCancel()"
+        [disabled]="isSubmitting"
+      >
+        <i class="fas fa-times"></i>
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-outline"
+        (click)="onReset()"
+        [disabled]="isSubmitting"
+      >
+        <i class="fas fa-undo"></i>
+        Reset
+      </button>
+
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="patientForm.invalid || isSubmitting"
+      >
+        <i *ngIf="!isSubmitting" class="fas fa-save"></i>
+        <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin"></i>
+        {{ isSubmitting ? 'Saving...' : 'Update Patient' }}
+      </button>
+    </div>
+  </form>
+</div>
