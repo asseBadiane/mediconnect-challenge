@@ -19,7 +19,7 @@ export const routes: Routes = [
     component: PatientFormComponent
   },
   {
-    path: 'patients/:id',
+    path: 'patient/:fhirId',
     component: PatientProfilePageComponent
   },
   {

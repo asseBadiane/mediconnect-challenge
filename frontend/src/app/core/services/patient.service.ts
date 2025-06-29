@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { catchError, Observable, tap, throwError } from 'rxjs';
 import { ApiService } from './api.service';
 
 import { Patient, PatientRequest, PatientResponse } from '../../shared/models/patient.model';
@@ -16,17 +16,30 @@ export class PatientService {
 
   // Get all patients with pagination
   getAllPatients(): Observable<PagedResponse<PatientResponse>> {
-    return this.apiService.get<PagedResponse<PatientResponse>>(`${this.baseUrl}/Patients`);
+    
+    return this.apiService.get<PagedResponse<PatientResponse>>(`${this.baseUrl}/Patients`).pipe(
+      // tap(data => console.log('Patients fetched successfully:', data))
+    );
   }
 
   // Create a new patient
   createPatient(patient: PatientRequest): Observable<PatientResponse> {
-    return this.apiService.post<PatientResponse>(`${this.baseUrl}/Patient`, patient);
+    return this.apiService.post<PatientResponse>(`${this.baseUrl}/Patient`, patient).pipe(
+      // tap(data => console.log('Patient created successfully:', data))
+    );
   }
 
-  // Get patient by FHIR ID
+
   getPatientByFhirId(fhirId: string): Observable<PatientResponse> {
-    return this.apiService.get<PatientResponse>(`${this.baseUrl}/Patient/${fhirId}`);
+    // console.log('Fetching patient with FHIR ID:', fhirId); // Add debug log
+    return this.apiService.get<PatientResponse>(`${this.baseUrl}/Patient/${fhirId}`)
+    // .pipe(
+    //   tap(data => console.log('Patient fetched successfully by FHIR ID:', data)),
+    //   catchError(error => {
+    //     console.error('Error fetching patient:', error);
+    //     return throwError(() => new Error('Failed to fetch patient'));
+    //   })
+    // );
   }
 
   // Update patient
