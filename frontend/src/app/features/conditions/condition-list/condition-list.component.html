@@ -1,0 +1,203 @@
+<!-- src/app/features/conditions/components/condition-list/condition-list.component.html -->
+<div class="condition-list-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="header-content">
+      <div class="title-section">
+        <h2 class="page-title">
+          <i class="fas fa-stethoscope"></i>
+          All Conditions
+        </h2>
+        <p class="page-subtitle">Manage patient medical conditions</p>
+      </div>
+      <div class="header-actions">
+        <button 
+          class="btn btn-primary"
+          (click)="onAddCondition()"
+          type="button">
+          <i class="fas fa-plus"></i>
+          Add Condition
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-icon">
+          <i class="fas fa-list-alt"></i>
+        </div>
+        <div class="stat-info">
+          <h3>{{ getTotalConditions() }}</h3>
+          <p>Total Conditions</p>
+        </div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-icon active">
+          <i class="fas fa-heartbeat"></i>
+        </div>
+        <div class="stat-info">
+          <h3>{{ getActiveConditionsCount() }}</h3>
+          <p>Active Conditions</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filter Section -->
+  <div class="filter-section">
+    <div class="search-container">
+      <div class="search-input-group">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          class="form-control search-input"
+          placeholder="Search conditions, patients, or notes..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()">
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button 
+        class="btn btn-outline-secondary"
+        (click)="onRefresh()"
+        type="button"
+        title="Refresh">
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Conditions Table -->
+  <div class="table-container">
+    <div class="table-header">
+      <div class="table-title">
+        <span>Condition Management</span>
+        <span class="record-count">{{ filteredConditions.length }} conditions</span>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="spinner-border" role="status">
+        <span class="sr-only">Loading conditions...</span>
+      </div>
+      <p>Loading conditions...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && filteredConditions.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="fas fa-stethoscope"></i>
+      </div>
+      <h3>No Conditions Found</h3>
+      <p *ngIf="searchTerm">No conditions match your search criteria.</p>
+      <p *ngIf="!searchTerm">No conditions have been added yet.</p>
+      <button 
+        *ngIf="!searchTerm"
+        class="btn btn-primary"
+        (click)="onAddCondition()"
+        type="button">
+        <i class="fas fa-plus"></i>
+        Add First Condition
+      </button>
+    </div>
+
+    <!-- Conditions Table -->
+    <div *ngIf="!isLoading && filteredConditions.length > 0" class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th scope="col" class="checkbox-col">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [checked]="isAllSelected()"
+                (change)="onSelectAll()">
+            </th>
+            <th scope="col">Condition</th>
+            <th scope="col">Patient</th>
+            <th scope="col">Clinical Status</th>
+            <th scope="col">Severity</th>
+            <th scope="col">Onset Date</th>
+            <th scope="col">Last Updated</th>
+            <th scope="col" class="actions-col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let condition of filteredConditions; trackBy: trackByConditionId" 
+              class="condition-row">
+            <td class="checkbox-col">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [checked]="isSelected(condition.id)"
+                (change)="onConditionSelect(condition.id!)">
+            </td>
+            <td class="condition-info">
+              <div class="condition-details">
+                <span class="condition-name">{{ condition.codeDisplay || 'Unknown Condition' }}</span>
+                <small class="condition-code">{{ condition.codeValue }}</small>
+              </div>
+            </td>
+            <td class="patient-info">
+              <div class="patient-details">
+                <span class="patient-name">{{ getPatientNameFromReference(condition.patientReference) }}</span>
+                <small class="patient-id">{{ condition.patientReference }}</small>
+              </div>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="getStatusBadgeClass(condition.clinicalStatus)">
+                {{ condition.clinicalStatus || 'Unknown' }}
+              </span>
+            </td>
+            <td>
+              <span 
+                *ngIf="condition.severityDisplay"
+                class="badge" 
+                [ngClass]="getSeverityBadgeClass(condition.severityDisplay)">
+                {{ condition.severityDisplay }}
+              </span>
+              <span *ngIf="!condition.severityDisplay" class="text-muted">N/A</span>
+            </td>
+            <td>
+              <span class="date-info">{{ formatDate(condition.onsetDateTime) }}</span>
+            </td>
+            <td>
+              <span class="date-info">{{ formatDate(condition.updatedAt) }}</span>
+            </td>
+            <td class="actions-col">
+              <div class="action-buttons">
+                <button
+                  class="btn btn-sm btn-outline-primary"
+                  (click)="onViewCondition(condition)"
+                  title="View Details"
+                  type="button">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-secondary"
+                  (click)="onEditCondition(condition)"
+                  title="Edit Condition"
+                  type="button">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-danger"
+                  (click)="onDeleteCondition(condition)"
+                  title="Delete Condition"
+                  type="button">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

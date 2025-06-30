@@ -4,6 +4,7 @@ import { PatientListComponent } from './features/patients/components/patient-lis
 import { PatientFormComponent } from './features/patients/components/patient-form/patient-form.component';
 import { PatientProfilePageComponent } from './features/patients/components/patient-profile-page/patient-profile-page.component';
 import { UpdatePatientComponent } from './features/patients/components/update-patient/update-patient.component';
+import { ConditionListComponent } from './features/conditions/condition-list/condition-list.component';
 
 
 export const routes: Routes = [
@@ -29,6 +30,6 @@ export const routes: Routes = [
   },
   {
     path: 'conditions',
-    loadChildren: () => import('./features/conditions/conditions.module').then(m => m.ConditionsModule)
+    component: ConditionListComponent
   }
 ];
