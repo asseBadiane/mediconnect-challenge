@@ -1,0 +1,148 @@
+<div class="patient-list-container">
+  <div class="list-header">
+    <h2>Patients</h2>
+    <button mat-raised-button color="primary" (click)="addNewPatient()">
+      <mat-icon>person_add</mat-icon>
+      Add Patient
+    </button>
+  </div>
+
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Patient Management</mat-card-title>
+      <mat-card-subtitle>Total: {{ totalElements }} patients</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Search Bar -->
+      <mat-form-field class="search-field" appearance="outline">
+        <mat-label>Search patients</mat-label>
+        <input matInput (keyup)="applyFilter($event)" placeholder="Search by name, email, or phone">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <!-- Loading Spinner -->
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner></mat-spinner>
+      </div>
+
+      <!-- Patients Table -->
+      <div *ngIf="!isLoading" class="table-container">
+        <table mat-table [dataSource]="dataSource" class="patients-table">
+          
+          <!-- Name Column -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let patient">
+              <div class="patient-name">
+                <mat-icon class="patient-avatar">person</mat-icon>
+                <div class="name-info">
+                  <div class="full-name">{{ patient.givenName }} {{ patient.familyName }}</div>
+                  <div class="patient-id">ID: {{ patient.fhirId }}</div>
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Identifier Column -->
+          <ng-container matColumnDef="identifier">
+            <th mat-header-cell *matHeaderCellDef>Identifier</th>
+            <td mat-cell *matCellDef="let patient">
+              <span class="identifier-badge">{{ patient.identifier }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Gender Column -->
+          <ng-container matColumnDef="gender">
+            <th mat-header-cell *matHeaderCellDef>Gender</th>
+            <td mat-cell *matCellDef="let patient">
+              <mat-chip [color]="patient.gender === 'MALE' ? 'primary' : patient.gender === 'FEMALE' ? 'accent' : 'warn'">
+                {{ getGenderDisplay(patient.gender) }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Birth Date Column -->
+          <ng-container matColumnDef="birthDate">
+            <th mat-header-cell *matHeaderCellDef>Birth Date</th>
+            <td mat-cell *matCellDef="let patient">
+              <div class="birth-info">
+                <div class="birth-date">{{ patient.birthDate | date:'mediumDate' }}</div>
+                <div class="age">Age: {{ getAge(patient.birthDate) }}</div>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Phone Column -->
+          <ng-container matColumnDef="phone">
+            <th mat-header-cell *matHeaderCellDef>Phone</th>
+            <td mat-cell *matCellDef="let patient">
+              <div class="contact-info" *ngIf="patient.phone">
+                <mat-icon class="contact-icon">phone</mat-icon>
+                {{ patient.phone }}
+              </div>
+              <span *ngIf="!patient.phone" class="no-data">N/A</span>
+            </td>
+          </ng-container>
+
+          <!-- Email Column -->
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let patient">
+              <div class="contact-info" *ngIf="patient.email">
+                <mat-icon class="contact-icon">email</mat-icon>
+                {{ patient.email }}
+              </div>
+              <span *ngIf="!patient.email" class="no-data">N/A</span>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let patient">
+              <div class="action-buttons">
+                <button mat-icon-button 
+                        color="primary" 
+                        (click)="viewPatient(patient)"
+                        matTooltip="View Patient">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                
+                <button mat-icon-button 
+                        color="accent" 
+                        (click)="editPatient(patient)"
+                        matTooltip="Edit Patient">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                
+                <button mat-icon-button 
+                        color="warn" 
+                        (click)="deletePatient(patient)"
+                        matTooltip="Delete Patient">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+              class="patient-row"
+              (click)="viewPatient(row)"></tr>
+        </table>
+
+        <!-- No Data Message -->
+        <div *ngIf="dataSource.data.length === 0" class="no-data-container">
+          <mat-icon class="no-data-icon">person_outline</mat-icon>
+          <h3>No Patients Found</h3>
+          <p>Start by adding your first patient to the system.</p>
+          <button mat-raised-button color="primary" (click)="addNewPatient()">
+            <mat-icon>person_add</mat-icon>
+            Add First Patient
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

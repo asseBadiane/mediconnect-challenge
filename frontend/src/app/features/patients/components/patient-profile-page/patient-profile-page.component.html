@@ -1,0 +1,307 @@
+<!-- patient-profile-page.component.html -->
+<div class="patient-profile-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading patient information...</p>
+  </div>
+
+  <!-- Patient Profile Content -->
+  <div *ngIf="!isLoading && patient" class="profile-content">
+    <!-- Header -->
+    <div class="profile-header">
+      <div class="header-content">
+        <div class="patient-info">
+          <div class="patient-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <div class="patient-details">
+            <h1 class="patient-name">{{ getFullName() }}</h1>
+            <div class="patient-meta">
+              <span class="meta-item">
+                <i class="fas fa-id-badge"></i>
+                ID: {{ patient.identifierValue }}
+              </span>
+              <span class="meta-item" *ngIf="getAge()">
+                <i class="fas fa-birthday-cake"></i>
+                {{ getAge() }} years old
+              </span>
+              <span class="meta-item">
+                <i class="fas fa-venus-mars"></i>
+                {{ getGenderDisplay() }}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <button class="btn btn-outline" (click)="onBackToList()">
+            <i class="fas fa-arrow-left"></i>
+            Back to List
+          </button>
+          <button class="btn btn-primary" (click)="onEditPatient()">
+            <i class="fas fa-edit"></i>
+            Edit Patient
+          </button>
+          <button 
+            class="btn btn-danger" 
+            (click)="onDeletePatient()"
+            [disabled]="isDeleting"
+          >
+            <i *ngIf="!isDeleting" class="fas fa-trash"></i>
+            <i *ngIf="isDeleting" class="fas fa-spinner fa-spin"></i>
+            {{ isDeleting ? 'Deleting...' : 'Delete' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'overview'"
+        (click)="setActiveTab('overview')"
+      >
+        <i class="fas fa-user"></i>
+        Overview
+      </button>
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'conditions'"
+        (click)="setActiveTab('conditions')"
+      >
+        <i class="fas fa-stethoscope"></i>
+        Medical Conditions
+        <span class="badge" *ngIf="conditions.length > 0">{{ conditions.length }}</span>
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      <!-- Overview Tab -->
+      <div class="tab-pane" [class.active]="activeTab === 'overview'">
+        <div class="overview-grid">
+          <!-- Personal Information Card -->
+          <div class="info-card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="fas fa-user"></i>
+                Personal Information
+              </h3>
+            </div>
+            <div class="card-content">
+              <div class="info-row">
+                <span class="info-label">Full Name:</span>
+                <span class="info-value">{{ getFullName() }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Identifier:</span>
+                <span class="info-value">{{ patient.identifierValue }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Gender:</span>
+                <span class="info-value">{{ getGenderDisplay() }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Birth Date:</span>
+                <span class="info-value">{{ patient.birthDate | date:'longDate' }}</span>
+              </div>
+              <div class="info-row" *ngIf="getAge()">
+                <span class="info-label">Age:</span>
+                <span class="info-value">{{ getAge() }} years</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Information Card -->
+          <div class="info-card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="fas fa-phone"></i>
+                Contact Information
+              </h3>
+            </div>
+            <div class="card-content">
+              <div class="info-row" *ngIf="patient?.phone">
+                <span class="info-label">Phone:</span>
+                <span class="info-value">
+                  <a href="tel:{{ patient.phone }}" class="contact-link">
+                    {{ patient.phone }}
+                  </a>
+                </span>
+              </div>
+              <div class="info-row" *ngIf="patient?.email">
+                <span class="info-label">Email:</span>
+                <span class="info-value">
+                  <a href="mailto:{{ patient.email }}" class="contact-link">
+                    {{ patient.email }}
+                  </a>
+                </span>
+              </div>
+              <div class="info-row" *ngIf="getFullAddress()">
+                <span class="info-label">Address:</span>
+                <span class="info-value">{{ getFullAddress() }}</span>
+              </div>
+              <div class="info-row" *ngIf="!patient?.phone && !patient?.email && !getFullAddress()">
+                <span class="no-data">No contact information available</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Medical Summary Card -->
+          <div class="info-card medical-summary">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="fas fa-stethoscope"></i>
+                Medical Summary
+              </h3>
+            </div>
+            <div class="card-content">
+              <div class="summary-stats">
+                <div class="stat-item">
+                  <span class="stat-number">{{ conditions.length }}</span>
+                  <span class="stat-label">Total Conditions</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number active">{{ getActiveConditionsCount() }}</span>
+                  <span class="stat-label">Active</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number inactive">{{ getInactiveConditionsCount() }}</span>
+                  <span class="stat-label">Inactive</span>
+                </div>
+              </div>
+              <div class="summary-actions">
+                <button class="btn btn-primary btn-sm" (click)="onAddCondition()">
+                  <i class="fas fa-plus"></i>
+                  Add Condition
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- System Information Card -->
+          <div class="info-card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="fas fa-info-circle"></i>
+                System Information
+              </h3>
+            </div>
+            <div class="card-content">
+              <div class="info-row">
+                <span class="info-label">FHIR ID:</span>
+                <span class="info-value">{{ patient.fhirId }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Status:</span>
+                <span class="info-value">
+                  <span class="status-badge" [class]="patient.active ? 'active' : 'inactive'">
+                    {{ patient.active }}
+                  </span>
+                </span>
+              </div>
+              <div class="info-row" *ngIf="patient?.createdAt">
+                <span class="info-label">Created:</span>
+                <span class="info-value">{{ formatDate(patient.createdAt || '') }}</span>
+              </div>
+              <div class="info-row" *ngIf="patient?.updatedAt">
+                <span class="info-label">Last Updated:</span>
+                <span class="info-value">{{ formatDate(patient.updatedAt || '') }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conditions Tab -->
+      <div class="tab-pane" [class.active]="activeTab === 'conditions'">
+        <div class="conditions-section">
+          <div class="section-header">
+            <h3 class="section-title">Medical Conditions</h3>
+            <button class="btn btn-primary" (click)="onAddCondition()">
+              <i class="fas fa-plus"></i>
+              Add New Condition
+            </button>
+          </div>
+
+          <div *ngIf="conditions.length === 0" class="no-conditions">
+            <div class="no-data-illustration">
+              <i class="fas fa-stethoscope"></i>
+            </div>
+            <h4>No Medical Conditions</h4>
+            <p>This patient has no recorded medical conditions.</p>
+            <button class="btn btn-primary" (click)="onAddCondition()">
+              <i class="fas fa-plus"></i>
+              Add First Condition
+            </button>
+          </div>
+
+          <div *ngIf="conditions.length > 0" class="conditions-list">
+            <div 
+              *ngFor="let condition of conditions; trackBy: trackByConditionId"
+              class="condition-card"
+              (click)="onViewCondition(condition.id || '')"
+            >
+              <div class="condition-header">
+                <div class="condition-title">
+                  <h4>{{ getConditionDisplay(condition) }}</h4>
+                  <div class="condition-badges">
+                    <span class="badge status-badge" [class]="getConditionStatusClass(condition)">
+                      {{ getConditionStatusDisplay(condition) }}
+                    </span>
+                    <span 
+                      *ngIf="getConditionSeverityDisplay(condition)"
+                      class="badge severity-badge" 
+                      [class]="getConditionSeverityClass(condition)"
+                    >
+                      {{ getConditionSeverityDisplay(condition) }}
+                    </span>
+                  </div>
+                </div>
+                <div class="condition-actions">
+                  <button 
+                    class="btn-icon"
+                    (click)="onEditCondition(condition.id || ''); $event.stopPropagation()"
+                    title="Edit Condition"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="condition-details">
+                <div class="detail-row" *ngIf="condition.onsetDateTime">
+                  <span class="detail-label">Onset:</span>
+                  <span class="detail-value">{{ formatDate(condition.onsetDateTime) }}</span>
+                </div>
+                <div class="detail-row" *ngIf="getConditionCategoryDisplay(condition)">
+                  <span class="detail-label">Category:</span>
+                  <span class="detail-value">{{ getConditionCategoryDisplay(condition) }}</span>
+                </div>
+                <div class="detail-row" *ngIf="getConditionNoteDisplay(condition)">
+                  <span class="detail-label">Notes:</span>
+                  <span class="detail-value">{{ getConditionNoteDisplay(condition) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && !patient" class="error-container">
+    <div class="error-content">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h3>Patient Not Found</h3>
+      <p>The requested patient could not be found.</p>
+      <button class="btn btn-primary" (click)="onBackToList()">
+        <i class="fas fa-arrow-left"></i>
+        Back to Patient List
+      </button>
+    </div>
+  </div>
+</div>

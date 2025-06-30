@@ -1,0 +1,14 @@
+services:
+  patient-db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: patient_user
+      POSTGRES_PASSWORD: patient_pass
+      POSTGRES_DB: patient_db
+    ports:
+      - "5433:5432"  # Crucial - exposes port to host
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

@@ -1,0 +1,57 @@
+# spring.application.name=condition-api
+server:
+  port: 8082
+
+spring:
+  application:
+    name: condition-api
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5434/condition_db
+    username: condition_user
+    password: condition_pass
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+# HAPI FHIR Configuration
+hapi:
+  fhir:
+    server:
+      path: /fhir/*
+    validation:
+      enabled: true
+      requests_enabled: true
+      responses_enabled: true
+
+# Patient API Configuration
+patient-api:
+  base-url: http://localhost:8080/fhir
+
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# Logging
+logging:
+  level:
+    com.mediconnect: DEBUG
+    ca.uhn.fhir: INFO

@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  patient-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: patient_db
+      POSTGRES_USER: patient_user
+      POSTGRES_PASSWORD: patient_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - patient-db-data:/var/lib/postgresql/data
+    networks:
+      - mediconnect-network
+
+  condition-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: condition_db
+      POSTGRES_USER: condition_user
+      POSTGRES_PASSWORD: condition_pass
+    ports:
+      - "5434:5432"
+    volumes:
+      - condition-db-data:/var/lib/postgresql/data
+    networks:
+      - mediconnect-network
+
+  patient-api:
+    build:
+      context: ./patient-api
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://patient-db:5432/patient_db
+      SPRING_DATASOURCE_USERNAME: patient_user
+      SPRING_DATASOURCE_PASSWORD: patient_pass
+      HAPI_FHIR_SERVER_PATH: /fhir/*
+    depends_on:
+      - patient-db
+    networks:
+      - mediconnect-network
+
+  condition-api:
+    build:
+      context: ./condition-api
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://condition-db:5432/condition_db
+      SPRING_DATASOURCE_USERNAME: condition_user
+      SPRING_DATASOURCE_PASSWORD: condition_pass
+      PATIENT_API_BASE_URL: http://patient-api:8080/fhir
+      HAPI_FHIR_SERVER_PATH: /fhir/*
+    depends_on:
+      - condition-db
+      - patient-api
+    networks:
+      - mediconnect-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:4200"
+    depends_on:
+      - patient-api
+      - condition-api
+    networks:
+      - mediconnect-network
+
+volumes:
+  patient-db-data:
+  condition-db-data:
+
+networks:
+  mediconnect-network:
+    driver: bridge
