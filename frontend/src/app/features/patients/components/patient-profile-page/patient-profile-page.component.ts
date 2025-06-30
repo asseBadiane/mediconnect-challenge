@@ -63,7 +63,7 @@ export class PatientProfilePageComponent implements OnInit, OnDestroy {
     
     forkJoin({
       patient: this.patientService.getPatientByFhirId(this.fhirId),
-      conditions: this.conditionService.getConditionsByPatientId(this.fhirId)
+      conditions: this.conditionService.getConditionsByPatient(this.fhirId)
     }).pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
         // console.log('ForkJoin data received:', data); // Add debug log
